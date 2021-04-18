@@ -2,9 +2,9 @@ export class ChessBoard {
     board: Piece[][];
     kings: number[][];
     mate: boolean;
-    move(piece:Piece, x,y){};
-    checkMate(){};
-    promotion(){};
+    move(piece: Piece, x, y) { };
+    checkMate() { };
+    promotion() { };
 }
 
 export class Piece {
@@ -12,109 +12,115 @@ export class Piece {
     posX: number;
     posY: number;
     color: 0 | 1; //0 las blancas y 1 las negras
-    constructor(x:number,y:number, color:0 | 1){
+    constructor(x: number, y: number, color: 0 | 1) {
         this.posX = x;
         this.posY = y;
         this.color = color
     }
-    isLegalMove(x: number, y: number, check: 0 | 1): boolean {
+    isLegalMove(x: number, y: number, check: 0 | 1, checkKing: boolean): boolean {
         return false
     };
     validateMove(x: number, y: number, check: 0 | 1): boolean {
         return false;
     };
-    check(cheeseBoard:ChessBoard){}
+    check(cheeseBoard: ChessBoard) { }
 }
 
-class Tower extends Piece{
-    constructor(posx, posy, color){
-        super(posx, posy,color);
+class Tower extends Piece {
+    constructor(posx, posy, color) {
+        super(posx, posy, color);
         this.type = 1;
     }
 
     chessboard: ChessBoard;
 
-    isLegalMove(x:number, y:number, check: 0 | 1): boolean{
-        if(this.chessboard[y][x].color == this.color){
+    isLegalMove(x: number, y: number, check: 0 | 1, checkKing: boolean): boolean {
+        if (this.chessboard[y][x].color == this.color) {
             return false;
+        } else if (checkKing && (x == this.chessboard.kings[this.color + 1 % 2][0] && 1 == this.chessboard.kings[this.color + 1 % 2][1])) {
+            return false
         }
-        if(x == this.posX){
-            if(y >= this.posY){
-                for (let i = this.posY; i < y; i++){
-                    if(this.chessboard[i][x]){
+        if (x == this.posX) {
+            if (y >= this.posY) {
+                for (let i = this.posY; i < y; i++) {
+                    if (this.chessboard[i][x]) {
                         return false;
                     }
                 }
                 return true;
-            }else{
-                for (let i = this.posY; i > y; i--){
-                    if(this.chessboard[i][x]){
+            } else {
+                for (let i = this.posY; i > y; i--) {
+                    if (this.chessboard[i][x]) {
                         return false;
                     }
                 }
                 return true;
             }
         }
-        else if (y == this.posY){
-            if(x >= this.posX){
-                for (let i = this.posX; i < x; i++){
-                    if(this.chessboard[y][i]){
+        else if (y == this.posY) {
+            if (x >= this.posX) {
+                for (let i = this.posX; i < x; i++) {
+                    if (this.chessboard[y][i]) {
                         return false;
                     }
                 }
                 return true;
-            }else{
-                for (let i = this.posX; i > x; i--){
-                    if(this.chessboard[y][i]){
+            } else {
+                for (let i = this.posX; i > x; i--) {
+                    if (this.chessboard[y][i]) {
                         return false;
                     }
                 }
                 return true;
             }
-        }else{
+        } else {
             return false;
         }
     }
 }
 
-class Horse extends Piece{
-    constructor(posx, posy, color){
-        super(posx, posy,color);
+class Horse extends Piece {
+    constructor(posx, posy, color) {
+        super(posx, posy, color);
         this.type = 3;
     }
 
     chessboard: ChessBoard;
 
-    isLegalMove(x:number, y:number, check: 0 | 1):boolean{
-        if(this.chessboard[y][x].color == this.color){
+    isLegalMove(x: number, y: number, check: 0 | 1, checkKing: boolean): boolean {
+        if (this.chessboard[y][x].color == this.color) {
             return false;
+        } else if (checkKing && (x == this.chessboard.kings[this.color + 1 % 2][0] && 1 == this.chessboard.kings[this.color + 1 % 2][1])) {
+            return false
         }
-        if(Math.abs(x-this.posX) == 2 && Math.abs(y-this.posY) == 1){
+        if (Math.abs(x - this.posX) == 2 && Math.abs(y - this.posY) == 1) {
             return true;
         }
-        else if(Math.abs(x-this.posX) == 1 && Math.abs(y-this.posY) == 2){
+        else if (Math.abs(x - this.posX) == 1 && Math.abs(y - this.posY) == 2) {
             return true;
-        }else{
+        } else {
             return false;
         }
     };
 }
 
-class King extends Piece{
-    constructor(posx, posy, color){
-        super(posx, posy,color);
+class King extends Piece {
+    constructor(posx, posy, color) {
+        super(posx, posy, color);
         this.type = 3;
     }
 
     chessboard: ChessBoard;
 
-    isLegalMove(x:number, y:number, check: 0 | 1):boolean{
-        if(this.chessboard[y][x].color == this.color){
+    isLegalMove(x: number, y: number, check: 0 | 1, checkKing: boolean): boolean {
+        if (this.chessboard[y][x].color == this.color) {
             return false;
+        } else if (checkKing && (x == this.chessboard.kings[this.color + 1 % 2][0] && 1 == this.chessboard.kings[this.color + 1 % 2][1])) {
+            return false
         }
-        if(Math.abs(x - this.posX) < 2 && Math.abs(y - this.posY) < 2){
+        if (Math.abs(x - this.posX) < 2 && Math.abs(y - this.posY) < 2) {
             return true;
-        }else{
+        } else {
             return false;
         }
     };
@@ -126,10 +132,14 @@ class Pawn extends Piece {
         this.type = 0;
     }
 
-    isLegalMove(x: number, y: number, check: 0 | 1) {
+    isLegalMove(x: number, y: number, check: 0 | 1, checkKing: boolean) {
         let legal = false;
         const board = new ChessBoard();
         let checkPiece: Piece[] = [];
+        if (checkKing && (x == board.kings[this.color + 1 % 2][0] && 1 == board.kings[this.color + 1 % 2][1])) {
+            legal = false
+            return legal;
+        }
 
         if ((this.color == 0 && y == this.posY - 1) || (this.color == 1 && y == this.posY + 1)) {
             if (x == this.posX) {
@@ -152,10 +162,14 @@ class Bishop extends Piece {
         this.type = 2;
     }
 
-    isLegalMove(x: number, y: number, check: 0 | 1) {
+    isLegalMove(x: number, y: number, check: 0 | 1, checkKing: boolean) {
         let legal = false;
         const board = new ChessBoard();
         let checkPiece: Piece[] = [];
+        if (checkKing && (x == board.kings[this.color + 1 % 2][0] && 1 == board.kings[this.color + 1 % 2][1])) {
+            legal = false
+            return legal;
+        }
         if ((Math.abs(x - this.posX) == Math.abs(y - this.posY))) {
             let inMiddle = false;
             const ySing = Math.sign(y - this.posY);
@@ -183,15 +197,19 @@ class Queen extends Piece {
         this.type = 4;
     }
 
-    isLegalMove(x: number, y: number, check: 0 | 1) {
+    isLegalMove(x: number, y: number, check: 0 | 1, checkKing: boolean) {
         let legal = false;
         const board = new ChessBoard();
         let checkPiece: Piece[] = [];
+        if (checkKing && (x == board.kings[this.color + 1 % 2][0] && 1 == board.kings[this.color + 1 % 2][1])) {
+            legal = false
+            return legal;
+        }
         const ySing = Math.sign(y - this.posY);
         const xSing = Math.sign(x - this.posX);
         let actY = this.posY;
         let actX = this.posX;
-        if ((Math.abs(x - this.posX) == Math.abs(y - this.posY))||(xSing == 0) || (ySing==0)){
+        if ((Math.abs(x - this.posX) == Math.abs(y - this.posY)) || (xSing == 0) || (ySing == 0)) {
             let inMiddle = false;
             do {
                 inMiddle = legal = board.board[actY][actX] != null;
