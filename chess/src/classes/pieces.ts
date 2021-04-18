@@ -1,8 +1,35 @@
+import { ChessService } from "src/services/chess-service.service";
+
 export class ChessBoard {
     board: Piece[][];
     kings: number[][];
     mate: boolean;
     move(piece: Piece, x, y) { };
+    defaulBoard() {
+        this.board = [];
+        for (let i = 0; i < 8; i++) {
+            this.board[i]=[];
+            for (let j = 0; j < 8; j++) {
+                if (i == 1 || i == 6) {
+                    this.board[i][j] = new Pawn(j, i, i < 4 ? 1 : 0)
+                }else if(i == 0 || i == 7){
+                    if(j == 0 || j == 7){
+                        this.board[i][j] = new Tower(j, i, i < 4 ? 1 : 0)
+                    }else if(j == 1 || j == 6){
+                        this.board[i][j] = new Horse(j, i, i < 4 ? 1 : 0)
+                    }else if(j == 2 || j == 5){
+                        this.board[i][j] = new Bishop(j, i, i < 4 ? 1 : 0)
+                    }else if(j == 3){
+                        this.board[i][j] = new Queen(j, i, i < 4 ? 1 : 0)
+                    }else if(j == 4){
+                        this.board[i][j] = new King(j, i, i < 4 ? 1 : 0)
+                    }
+                }else{
+                    this.board[i][j] = null;
+                }
+            }
+        }
+    };
     checkMate() { };
     promotion() { };
 }
@@ -12,6 +39,7 @@ export class Piece {
     posX: number;
     posY: number;
     color: 0 | 1; //0 las blancas y 1 las negras
+    chesseService:ChessService
     constructor(x: number, y: number, color: 0 | 1) {
         this.posX = x;
         this.posY = y;
@@ -107,7 +135,7 @@ class Horse extends Piece {
 class King extends Piece {
     constructor(posx, posy, color) {
         super(posx, posy, color);
-        this.type = 3;
+        this.type = 5;
     }
 
     chessboard: ChessBoard;
@@ -134,7 +162,7 @@ class Pawn extends Piece {
 
     isLegalMove(x: number, y: number, check: 0 | 1, checkKing: boolean) {
         let legal = false;
-        const board = new ChessBoard();
+        const board = this.chesseService.chessBoard.getValue();
         let checkPiece: Piece[] = [];
         if (checkKing && (x == board.kings[this.color + 1 % 2][0] && 1 == board.kings[this.color + 1 % 2][1])) {
             legal = false
@@ -199,7 +227,7 @@ class Queen extends Piece {
 
     isLegalMove(x: number, y: number, check: 0 | 1, checkKing: boolean) {
         let legal = false;
-        const board = new ChessBoard();
+        const board = this.chesseService.chessBoard.getValue();
         let checkPiece: Piece[] = [];
         if (checkKing && (x == board.kings[this.color + 1 % 2][0] && 1 == board.kings[this.color + 1 % 2][1])) {
             legal = false
