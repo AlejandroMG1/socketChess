@@ -11,6 +11,11 @@ export class Piece{
     posX: number;
     posY: number;
     color: 0 | 1;
+    constructor(x:number,y:number, color:0 | 1){
+        this.posX = x;
+        this.posY = y;
+        this.color = color
+    }
     isLegalMove(x:number, y:number, check: 0 | 1):boolean{
         return false
     };
