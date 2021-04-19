@@ -4,35 +4,48 @@ export class ChessBoard {
     board: Piece[][];
     kings: number[][];
     mate: boolean;
-    move(piece: Piece, x, y) { 
+    move(piece: Piece, x, y) {
         const first_x = piece.posX;
         const first_y = piece.posY;
-        if(piece.validateMove(x,y, 0)){
+        if (piece.isLegalMove(x, y, 0, true)) {
             this.board[y][x] = piece;
-            this.board[first_y][first_x] = null; 
+            this.board[first_y][first_x] = null;
+            piece.posX = x;
+            piece.posY = y;
         }
     };
 
+
+    constructor(private chessService: ChessService) {
+
+    }
+
     defaulBoard() {
         this.board = [];
+        this.kings = [];
+        let counter = 0;
         for (let i = 0; i < 8; i++) {
-            this.board[i]=[];
+            this.board[i] = [];
             for (let j = 0; j < 8; j++) {
                 if (i == 1 || i == 6) {
-                    this.board[i][j] = new Pawn(j, i, i < 4 ? 1 : 0)
-                }else if(i == 0 || i == 7){
-                    if(j == 0 || j == 7){
-                        this.board[i][j] = new Tower(j, i, i < 4 ? 1 : 0)
-                    }else if(j == 1 || j == 6){
-                        this.board[i][j] = new Horse(j, i, i < 4 ? 1 : 0)
-                    }else if(j == 2 || j == 5){
-                        this.board[i][j] = new Bishop(j, i, i < 4 ? 1 : 0)
-                    }else if(j == 3){
-                        this.board[i][j] = new Queen(j, i, i < 4 ? 1 : 0)
-                    }else if(j == 4){
-                        this.board[i][j] = new King(j, i, i < 4 ? 1 : 0)
+                    this.board[i][j] = new Pawn(j, i, i < 4 ? 1 : 0, this.chessService)
+                } else if (i == 0 || i == 7) {
+                    if (j == 0 || j == 7) {
+                        this.board[i][j] = new Tower(j, i, i < 4 ? 1 : 0, this.chessService)
+                    } else if (j == 1 || j == 6) {
+                        this.board[i][j] = new Horse(j, i, i < 4 ? 1 : 0, this.chessService)
+                    } else if (j == 2 || j == 5) {
+                        this.board[i][j] = new Bishop(j, i, i < 4 ? 1 : 0, this.chessService)
+                    } else if (j == 3) {
+                        this.board[i][j] = new Queen(j, i, i < 4 ? 1 : 0, this.chessService)
+                    } else if (j == 4) {
+                        this.board[i][j] = new King(j, i, i < 4 ? 1 : 0, this.chessService)
+                        this.kings[i < 4 ? 1 : 0] = [];
+                        this.kings[i < 4 ? 1 : 0][0] = i;
+                        this.kings[i < 4 ? 1 : 0][1] = j;
+                        this.kings[i < 4 ? 1 : 0][2] = 0;
                     }
-                }else{
+                } else {
                     this.board[i][j] = null;
                 }
             }
@@ -47,11 +60,12 @@ export class Piece {
     posX: number;
     posY: number;
     color: 0 | 1; //0 las blancas y 1 las negras
-    chesseService:ChessService
-    constructor(x: number, y: number, color: 0 | 1) {
+    chesseService: ChessService
+    constructor(x: number, y: number, color: 0 | 1, chessService: ChessService) {
         this.posX = x;
         this.posY = y;
         this.color = color
+        this.chesseService = chessService
     }
     isLegalMove(x: number, y: number, check: 0 | 1, checkKing: boolean): boolean {
         return false
@@ -63,30 +77,29 @@ export class Piece {
 }
 
 class Tower extends Piece {
-    constructor(posx, posy, color) {
-        super(posx, posy, color);
+    constructor(posx, posy, color, chessService) {
+        super(posx, posy, color, chessService);
         this.type = 1;
     }
 
-    chessboard: ChessBoard;
-
     isLegalMove(x: number, y: number, check: 0 | 1, checkKing: boolean): boolean {
-        if (this.chessboard[y][x].color == this.color) {
+        const chessboard: ChessBoard = this.chesseService.chessBoard.getValue();
+        if ((chessboard.board[y][x] != null) && (chessboard.board[y][x].color == this.color)) {
             return false;
-        } else if (checkKing && (x == this.chessboard.kings[this.color + 1 % 2][0] && 1 == this.chessboard.kings[this.color + 1 % 2][1])) {
+        } else if (checkKing && (x == chessboard.kings[(this.color + 1) % 2][0] && 1 == chessboard.kings[(this.color + 1) % 2][1])) {
             return false
         }
         if (x == this.posX) {
             if (y >= this.posY) {
-                for (let i = this.posY; i < y; i++) {
-                    if (this.chessboard[i][x]) {
+                for (let i = this.posY + 1; i < y; i++) {
+                    if (chessboard.board[i][x]) {
                         return false;
                     }
                 }
                 return true;
             } else {
-                for (let i = this.posY; i > y; i--) {
-                    if (this.chessboard[i][x]) {
+                for (let i = this.posY - 1; i > y; i--) {
+                    if (chessboard.board[i][x]) {
                         return false;
                     }
                 }
@@ -95,15 +108,15 @@ class Tower extends Piece {
         }
         else if (y == this.posY) {
             if (x >= this.posX) {
-                for (let i = this.posX; i < x; i++) {
-                    if (this.chessboard[y][i]) {
+                for (let i = this.posX + 1; i < x; i++) {
+                    if (chessboard.board[y][i]) {
                         return false;
                     }
                 }
                 return true;
             } else {
-                for (let i = this.posX; i > x; i--) {
-                    if (this.chessboard[y][i]) {
+                for (let i = this.posX - 1; i > x; i--) {
+                    if (chessboard.board[y][i]) {
                         return false;
                     }
                 }
@@ -116,17 +129,16 @@ class Tower extends Piece {
 }
 
 class Horse extends Piece {
-    constructor(posx, posy, color) {
-        super(posx, posy, color);
+    constructor(posx, posy, color, chessService) {
+        super(posx, posy, color, chessService);
         this.type = 3;
     }
 
-    chessboard: ChessBoard;
-
     isLegalMove(x: number, y: number, check: 0 | 1, checkKing: boolean): boolean {
-        if (this.chessboard[y][x].color == this.color) {
+        const chessboard: ChessBoard = this.chesseService.chessBoard.getValue();
+        if ((chessboard.board[y][x] != null) && (chessboard.board[y][x].color == this.color)) {
             return false;
-        } else if (checkKing && (x == this.chessboard.kings[this.color + 1 % 2][0] && 1 == this.chessboard.kings[this.color + 1 % 2][1])) {
+        } else if (checkKing && (x == chessboard.kings[(this.color + 1) % 2][0] && 1 == chessboard.kings[(this.color + 1) % 2][1])) {
             return false
         }
         if (Math.abs(x - this.posX) == 2 && Math.abs(y - this.posY) == 1) {
@@ -141,17 +153,16 @@ class Horse extends Piece {
 }
 
 class King extends Piece {
-    constructor(posx, posy, color) {
-        super(posx, posy, color);
+    constructor(posx, posy, color, chessService) {
+        super(posx, posy, color, chessService);
         this.type = 5;
     }
 
-    chessboard: ChessBoard;
-
     isLegalMove(x: number, y: number, check: 0 | 1, checkKing: boolean): boolean {
-        if (this.chessboard[y][x].color == this.color) {
+        const chessboard: ChessBoard = this.chesseService.chessBoard.getValue();
+        if ((chessboard.board[y][x] != null) && (chessboard.board[y][x].color == this.color)) {
             return false;
-        } else if (checkKing && (x == this.chessboard.kings[this.color + 1 % 2][0] && 1 == this.chessboard.kings[this.color + 1 % 2][1])) {
+        } else if (checkKing && (x == chessboard.kings[(this.color + 1) % 2][0] && 1 == chessboard.kings[(this.color + 1) % 2][1])) {
             return false
         }
         if (Math.abs(x - this.posX) < 2 && Math.abs(y - this.posY) < 2) {
@@ -163,8 +174,8 @@ class King extends Piece {
 }
 
 class Pawn extends Piece {
-    constructor(x: number, y: number, color: 0 | 1) {
-        super(x, y, color)
+    constructor(posx, posy, color, chessService) {
+        super(posx, posy, color, chessService);
         this.type = 0;
     }
 
@@ -172,7 +183,7 @@ class Pawn extends Piece {
         let legal = false;
         const board = this.chesseService.chessBoard.getValue();
         let checkPiece: Piece[] = [];
-        if (checkKing && (x == board.kings[this.color + 1 % 2][0] && 1 == board.kings[this.color + 1 % 2][1])) {
+        if (checkKing && (x == board.kings[(this.color + 1) % 2][0] && 1 == board.kings[(this.color + 1) % 2][1])) {
             legal = false
             return legal;
         }
@@ -193,16 +204,16 @@ class Pawn extends Piece {
 }
 
 class Bishop extends Piece {
-    constructor(x: number, y: number, color: 0 | 1) {
-        super(x, y, color)
+    constructor(posx, posy, color, chessService) {
+        super(posx, posy, color, chessService);
         this.type = 2;
     }
 
     isLegalMove(x: number, y: number, check: 0 | 1, checkKing: boolean) {
         let legal = false;
-        const board = new ChessBoard();
+        const board = this.chesseService.chessBoard.getValue();
         let checkPiece: Piece[] = [];
-        if (checkKing && (x == board.kings[this.color + 1 % 2][0] && 1 == board.kings[this.color + 1 % 2][1])) {
+        if (checkKing && (x == board.kings[(this.color + 1) % 2][0] && 1 == board.kings[(this.color + 1) % 2][1])) {
             legal = false
             return legal;
         }
@@ -210,13 +221,13 @@ class Bishop extends Piece {
             let inMiddle = false;
             const ySing = Math.sign(y - this.posY);
             const xSing = Math.sign(x - this.posX);
-            let actY = this.posY;
-            let actX = this.posX;
-            do {
-                inMiddle = legal = board.board[actY][actX] != null;
+            let actY = this.posY + ySing;
+            let actX = this.posX + xSing;
+            while((actX != x && actY != y) && !inMiddle){
+                inMiddle = board.board[actY][actX] != null;
                 actY = actY + ySing;
-                actX = actX + ySing;
-            } while ((actX != x && actY != y) && !inMiddle)
+                actX = actX + xSing;
+            }
             if (inMiddle) {
                 legal = false;
             } else {
@@ -228,8 +239,8 @@ class Bishop extends Piece {
 }
 
 class Queen extends Piece {
-    constructor(x: number, y: number, color: 0 | 1) {
-        super(x, y, color)
+    constructor(posx, posy, color, chessService) {
+        super(posx, posy, color, chessService);
         this.type = 4;
     }
 
@@ -237,21 +248,21 @@ class Queen extends Piece {
         let legal = false;
         const board = this.chesseService.chessBoard.getValue();
         let checkPiece: Piece[] = [];
-        if (checkKing && (x == board.kings[this.color + 1 % 2][0] && 1 == board.kings[this.color + 1 % 2][1])) {
+        if (checkKing && (x == board.kings[(this.color + 1) % 2][0] && 1 == board.kings[(this.color + 1) % 2][1])) {
             legal = false
             return legal;
         }
         const ySing = Math.sign(y - this.posY);
         const xSing = Math.sign(x - this.posX);
-        let actY = this.posY;
-        let actX = this.posX;
+        let actY = this.posY + ySing;
+        let actX = this.posX + xSing;
         if ((Math.abs(x - this.posX) == Math.abs(y - this.posY)) || (xSing == 0) || (ySing == 0)) {
             let inMiddle = false;
-            do {
+            while((actX != x && actY != y) && !inMiddle){
                 inMiddle = legal = board.board[actY][actX] != null;
                 actY = actY + ySing;
-                actX = actX + ySing;
-            } while ((actX != x && actY != y) && !inMiddle)
+                actX = actX + xSing;
+            }
             if (inMiddle) {
                 legal = false;
             } else {

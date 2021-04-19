@@ -14,7 +14,7 @@ export class AppComponent {
 
   targetCordinates:number[]=[];
 
-  chesseBoard:ChessBoard = new ChessBoard()
+  chesseBoard:ChessBoard = new ChessBoard(this.chessService)
 
   constructor(private chessService:ChessService){
     this.chesseBoard.defaulBoard()
@@ -27,7 +27,7 @@ export class AppComponent {
       if(piece){
         this.selectedPiece = piece
       }else{
-        this.chesseBoard.move(piece,x,y);
+        this.chesseBoard.move(this.selectedPiece,x,y);
       }
     }else if(piece){
         this.selectedPiece = piece
