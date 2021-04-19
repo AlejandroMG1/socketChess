@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { ChessBoard, Piece } from 'src/classes/pieces';
 import { ChessService } from 'src/services/chess-service.service';
+import { SocketService } from 'src/services/socket.service';
 
 @Component({
   selector: 'app-root',
@@ -16,9 +17,13 @@ export class AppComponent {
 
   chesseBoard:ChessBoard = new ChessBoard(this.chessService)
 
-  constructor(private chessService:ChessService){
+  constructor(private chessService:ChessService, private socketService:SocketService){
     this.chesseBoard.defaulBoard()
     this.chessService.chessBoard.next(this.chesseBoard);
+  }
+
+  ngOnInit(): void {
+    this.socketService.setupSocketConnection();
   }
 
   performAction(x,y){

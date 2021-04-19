@@ -7,7 +7,9 @@ export class ChessBoard {
     constructor(private chessService: ChessService) {
 
     }
-    move(piece: Piece, x, y) { };
+    move(piece: Piece, x, y) {
+        
+     };
     defaulBoard() {
         this.board = [];
         for (let i = 0; i < 8; i++) {
