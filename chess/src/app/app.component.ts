@@ -14,7 +14,7 @@ export class AppComponent {
 
   targetCordinates:number[]=[];
 
-  chesseBoard:ChessBoard = new ChessBoard()
+  chesseBoard:ChessBoard = new ChessBoard(this.chessService)
 
   constructor(private chessService:ChessService){
     this.chesseBoard.defaulBoard()

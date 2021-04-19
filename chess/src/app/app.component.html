@@ -4,7 +4,7 @@
     <div *ngFor="let piece of row; index as j"
       style="height: 100%; width: 11vh; border: 1px solid black; position: relative;"
       [ngStyle]="{'background-color': ((i+j)%2==1) ? '#207CC4':'white'}" (click)="performAction(j,i)">
-      <p *ngIf="piece">{{piece.type}}</p>
+      <img *ngIf="piece" src="assets\images\{{''+piece.color+piece.type}}.png" alt="" style="max-width: 90%; max-height: 90%;"> 
     </div>
   </div>
 </div>
