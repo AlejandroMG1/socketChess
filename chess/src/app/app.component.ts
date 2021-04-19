@@ -27,7 +27,7 @@ export class AppComponent {
       if(piece){
         this.selectedPiece = piece
       }else{
-        console.log(this.selectedPiece.isLegalMove(x,y,0,false));
+        this.chesseBoard.move(piece,x,y);
       }
     }else if(piece){
         this.selectedPiece = piece

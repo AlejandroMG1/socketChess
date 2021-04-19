@@ -4,7 +4,15 @@ export class ChessBoard {
     board: Piece[][];
     kings: number[][];
     mate: boolean;
-    move(piece: Piece, x, y) { };
+    move(piece: Piece, x, y) { 
+        const first_x = piece.posX;
+        const first_y = piece.posY;
+        if(piece.validateMove(x,y, 0)){
+            this.board[y][x] = piece;
+            this.board[first_y][first_x] = null; 
+        }
+    };
+
     defaulBoard() {
         this.board = [];
         for (let i = 0; i < 8; i++) {
