@@ -6,7 +6,7 @@ WORKDIR /app
 COPY chess/package.json chess/package-lock.json /app/chess/
 
 RUN npm install --prefix chess
-RUN npm install socket.io-client @types/socket.io-client 
+RUN npm install --prefix chess socket.io-client @types/socket.io-client 
 
 COPY . /app
 RUN npm run ng build --prefix chess -- --output-path=./dist/out
