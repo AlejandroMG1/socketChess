@@ -11,31 +11,51 @@ import { SocketService } from 'src/services/socket.service';
 export class AppComponent {
   title = 'chess';
 
-  selectedPiece:Piece = null;
+  selectedPiece: Piece = null;
 
-  targetCordinates:number[]=[];
+  targetCordinates: number[] = [];
 
-  chesseBoard:ChessBoard = new ChessBoard(this.chessService)
+  room: number;
 
-  constructor(private chessService:ChessService, private socketService:SocketService){
+  color: number;
+
+  chesseBoard: ChessBoard = new ChessBoard(this.chessService)
+
+  constructor(private chessService: ChessService, private socketService: SocketService) {
     this.chesseBoard.defaulBoard()
     this.chessService.chessBoard.next(this.chesseBoard);
   }
 
   ngOnInit(): void {
-    this.socketService.setupSocketConnection();
+    this.socketService.setupSocketConnection().subscribe((data) => {
+      this.room = data.room
+      this.color = data.color
+      this.oponentMoves();
+    });
+
   }
 
-  performAction(x,y){
+  oponentMoves = () => {
+    this.socketService.gedMoved(this.room, this.color).subscribe((data) => {
+      this.chesseBoard.oponentMove(data);
+    });
+  }
+
+  performAction(x, y) {
     const piece = this.chesseBoard.board[y][x]
-    if(this.selectedPiece){
-      if(piece){
+    if (this.selectedPiece) {
+      if (piece && piece.color == this.color) {
         this.selectedPiece = piece
-      }else{
-        console.log(this.selectedPiece.isLegalMove(x,y,0,false));
+      } else {
+        const orgX = this.selectedPiece.posX
+        const orgY = this.selectedPiece.posY
+        if (this.chesseBoard.move(this.selectedPiece, x, y)) {
+          this.socketService.sendMove(orgX, orgY, x, y, this.room, this.color);
+        }
+
       }
-    }else if(piece){
-        this.selectedPiece = piece
-      }
+    } else if (piece && piece.color == this.color) {
+      this.selectedPiece = piece
+    }
   }
 }
