@@ -22,6 +22,16 @@ export class SocketService {
     })
   }
 
+  gameStart(room): Observable<any> {
+    console.log(''+room+'start');
+    
+    return new Observable((observer) => {
+      this.socket.on(''+room+'start', (data) => {
+        observer.next(data)
+      })
+    })
+  }
+
   sendMove(orgX: number, orgY: number, destX: number, destY: number, room: number, color: number) {
     this.socket.emit('move', { room, color, orgX, orgY, destX, destY })
   }

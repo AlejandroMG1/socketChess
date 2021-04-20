@@ -19,6 +19,8 @@ export class AppComponent {
 
   color: number;
 
+  moveAllowed = false;
+
   chesseBoard: ChessBoard = new ChessBoard(this.chessService)
 
   constructor(private chessService: ChessService, private socketService: SocketService) {
@@ -30,7 +32,11 @@ export class AppComponent {
     this.socketService.setupSocketConnection().subscribe((data) => {
       this.room = data.room
       this.color = data.color
+      if (this.color == 0) {
+        this.startGame();
+      }
       this.oponentMoves();
+
     });
 
   }
@@ -38,24 +44,37 @@ export class AppComponent {
   oponentMoves = () => {
     this.socketService.gedMoved(this.room, this.color).subscribe((data) => {
       this.chesseBoard.oponentMove(data);
+      this.moveAllowed = true;
     });
   }
 
-  performAction(x, y) {
-    const piece = this.chesseBoard.board[y][x]
-    if (this.selectedPiece) {
-      if (piece && piece.color == this.color) {
-        this.selectedPiece = piece
-      } else {
-        const orgX = this.selectedPiece.posX
-        const orgY = this.selectedPiece.posY
-        if (this.chesseBoard.move(this.selectedPiece, x, y)) {
-          this.socketService.sendMove(orgX, orgY, x, y, this.room, this.color);
-        }
+  startGame = () => {
+    this.socketService.gameStart(this.room).subscribe((start) => {
+      console.log(start);
+      this.moveAllowed = true;
+    })
+  }
 
+  performAction(x, y) {
+    if (this.moveAllowed) {
+      console.log("move");
+      
+      const piece = this.chesseBoard.board[y][x]
+      if (this.selectedPiece) {
+        if (piece && piece.color == this.color) {
+          this.selectedPiece = piece
+        } else {
+          const orgX = this.selectedPiece.posX
+          const orgY = this.selectedPiece.posY
+          if (this.chesseBoard.move(this.selectedPiece, x, y)) {
+            this.socketService.sendMove(orgX, orgY, x, y, this.room, this.color);
+            this.moveAllowed = false;
+          }
+
+        }
+      } else if (piece && piece.color == this.color) {
+        this.selectedPiece = piece
       }
-    } else if (piece && piece.color == this.color) {
-      this.selectedPiece = piece
     }
   }
 }

@@ -14,6 +14,10 @@ io.on('connection', (socket) => {
     console.log('a user connected');
     players++;
     socket.emit('getPlayer',{color:players%2,room:Math.floor(players/2)})
+    if(players%2==1){
+        console.log(''+Math.floor(players/2)+'start');
+        socket.emit(''+Math.floor(players/2)+'start',1)
+    }
     socket.on('disconnect', () => {
         players--;
         console.log('user disconnected');
