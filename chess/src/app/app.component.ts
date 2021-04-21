@@ -59,8 +59,6 @@ export class AppComponent {
 
   performAction(x, y) {
     if (this.moveAllowed) {
-      console.log("move");
-      
       const piece = this.chesseBoard.board[y][x]
       if (this.selectedPiece) {
         if (piece && piece.color == this.color) {

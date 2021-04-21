@@ -8,7 +8,7 @@ import { ChessBoard, Piece } from 'src/classes/pieces';
 export class ChessService {
 
   public chessBoard: BehaviorSubject<ChessBoard> = new BehaviorSubject(null);
-  public semaphore: BehaviorSubject<number> = new BehaviorSubject(12);
+  public semaphore: BehaviorSubject<number> = new BehaviorSubject(32);
   public trigger:BehaviorSubject<boolean> = new BehaviorSubject(false);
 
   public whiteCheck:BehaviorSubject<Piece[]> = new BehaviorSubject([]) 
@@ -20,7 +20,7 @@ export class ChessService {
   constructor() { }
 
   up() {
-    this.semaphore.next(12);
+    this.semaphore.next(32);
   }
 
   down() {
@@ -30,6 +30,23 @@ export class ChessService {
 
   changeTrigger(value){
     this.trigger.next(value);
+  }
+
+  cloneBoard(board: ChessBoard){
+    let aux1 = this.cloneMatrix(board.board);
+    let aux2 = this.cloneMatrix(board.kings);
+    let auxboard =  Object.assign({},board);
+    auxboard.board = aux1;
+    auxboard.kings = aux2;
+    return auxboard;
+  }
+
+  cloneMatrix(value: any){
+    let clonned = [];
+    value.forEach(element => {
+      clonned.push(Object.assign({},element));
+    });
+    return clonned;
   }
 
   deep<T>(value: T): T {
