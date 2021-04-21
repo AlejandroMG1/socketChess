@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { take } from 'rxjs/operators';
 import { ChessBoard, Piece } from 'src/classes/pieces';
 import { ChessService } from 'src/services/chess-service.service';
 import { SocketService } from 'src/services/socket.service';
@@ -34,7 +35,7 @@ export class AppComponent {
       this.color = data.color
       if (this.color == 0) {
         this.startGame();
-      } else if(this.color==1){
+      } else if (this.color == 1) {
         this.socketService.sendStart(this.room)
       }
       this.oponentMoves();
@@ -65,12 +66,16 @@ export class AppComponent {
           this.selectedPiece = piece
         } else {
           const orgX = this.selectedPiece.posX
-          const orgY = this.selectedPiece.posY
-          if (this.chesseBoard.move(this.selectedPiece, x, y)) {
-            this.socketService.sendMove(orgX, orgY, x, y, this.room, this.color);
-            this.moveAllowed = false;
-          }
-
+          const orgY = this.selectedPiece.posY;
+          this.chesseBoard.move(this.selectedPiece, x, y);
+          this.chessService.sendTrigger.pipe(take(1)).subscribe((data) => {
+            if (data) {
+              this.socketService.sendMove(orgX, orgY, x, y, this.room, this.color);
+              this.moveAllowed = false;
+              console.log("here");
+              this.chessService.UpdateSendTrigger(false);
+            }
+          });
         }
       } else if (piece && piece.color == this.color) {
         this.selectedPiece = piece

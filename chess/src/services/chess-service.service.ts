@@ -17,7 +17,13 @@ export class ChessService {
 
   public futureBoard: BehaviorSubject<ChessBoard> = new BehaviorSubject(null)
 
+  public sendTrigger:  BehaviorSubject<boolean> = new BehaviorSubject(false)
+
   constructor() { }
+
+  UpdateSendTrigger(value: boolean){
+    this.sendTrigger.next(value);
+  }
 
   addCheck(piece: Piece) {
     if (piece.color === 1) {
@@ -25,6 +31,11 @@ export class ChessService {
     }else{
       this.blackCheck.value.push(piece);
     }
+  }
+
+  resetCheck(){
+    this.whiteCheck.next([]);
+    this.blackCheck.next([]);
   }
 
   up() {
