@@ -15,6 +15,9 @@ export class ChessBoard {
             piece.posX = x;
             piece.posY = y;
             moved = true;
+            console.log(this);
+            
+            console.log(piece.check(this));
         }
         return moved
     };
@@ -62,7 +65,9 @@ export class ChessBoard {
             }
         }
     };
-    checkMate() { };
+    checkMate(board: ChessBoard) {
+
+    };
     promotion() { };
 }
 
@@ -78,13 +83,15 @@ export class Piece {
         this.color = color
         this.chesseService = chessService
     }
-    isLegalMove(x: number, y: number, check: 0 | 1, checkKing: boolean): boolean {
+    isLegalMove(x: number, y: number, check: number, checkKing: boolean, board?: ChessBoard): boolean {
         return false
     };
     validateMove(x: number, y: number, check: 0 | 1): boolean {
         return false;
     };
-    check(cheeseBoard: ChessBoard) { }
+    check(cheeseBoard: ChessBoard) {
+        return this.isLegalMove(cheeseBoard.kings[(this.color + 1) % 2][0], cheeseBoard.kings[(this.color + 1) % 2][1], cheeseBoard.kings[(this.color + 1) % 2][2], false)
+    }
 }
 
 class Tower extends Piece {
@@ -93,8 +100,9 @@ class Tower extends Piece {
         this.type = 1;
     }
 
-    isLegalMove(x: number, y: number, check: 0 | 1, checkKing: boolean): boolean {
-        const chessboard: ChessBoard = this.chesseService.chessBoard.getValue();
+    isLegalMove(x: number, y: number, check: number, checkKing: boolean, board?: ChessBoard): boolean {
+
+        const chessboard: ChessBoard = board ? board : this.chesseService.chessBoard.getValue();
         if ((chessboard.board[y][x] != null) && (chessboard.board[y][x].color == this.color)) {
             return false;
         } else if (checkKing && (x == chessboard.kings[(this.color + 1) % 2][0] && 1 == chessboard.kings[(this.color + 1) % 2][1])) {
@@ -137,6 +145,9 @@ class Tower extends Piece {
             return false;
         }
     }
+    check(cheeseBoard: ChessBoard) {
+        return this.isLegalMove(cheeseBoard.kings[(this.color + 1) % 2][0], cheeseBoard.kings[(this.color + 1) % 2][1], cheeseBoard.kings[(this.color + 1) % 2][2], false)
+    }
 }
 
 class Horse extends Piece {
@@ -145,8 +156,9 @@ class Horse extends Piece {
         this.type = 3;
     }
 
-    isLegalMove(x: number, y: number, check: 0 | 1, checkKing: boolean): boolean {
-        const chessboard: ChessBoard = this.chesseService.chessBoard.getValue();
+    isLegalMove(x: number, y: number, check: number, checkKing: boolean, board?: ChessBoard): boolean {
+
+        const chessboard: ChessBoard = board ? board : this.chesseService.chessBoard.getValue();
         if ((chessboard.board[y][x] != null) && (chessboard.board[y][x].color == this.color)) {
             return false;
         } else if (checkKing && (x == chessboard.kings[(this.color + 1) % 2][0] && 1 == chessboard.kings[(this.color + 1) % 2][1])) {
@@ -161,6 +173,10 @@ class Horse extends Piece {
             return false;
         }
     };
+
+    check(cheeseBoard: ChessBoard) {
+        return this.isLegalMove(cheeseBoard.kings[(this.color + 1) % 2][0], cheeseBoard.kings[(this.color + 1) % 2][1], cheeseBoard.kings[(this.color + 1) % 2][2], false)
+    }
 }
 
 class King extends Piece {
@@ -169,8 +185,9 @@ class King extends Piece {
         this.type = 5;
     }
 
-    isLegalMove(x: number, y: number, check: 0 | 1, checkKing: boolean): boolean {
-        const chessboard: ChessBoard = this.chesseService.chessBoard.getValue();
+    isLegalMove(x: number, y: number, check:number, checkKing: boolean, board?: ChessBoard): boolean {
+
+        const chessboard: ChessBoard = board ? board : this.chesseService.chessBoard.getValue();
         if ((chessboard.board[y][x] != null) && (chessboard.board[y][x].color == this.color)) {
             return false;
         } else if (checkKing && (x == chessboard.kings[(this.color + 1) % 2][0] && 1 == chessboard.kings[(this.color + 1) % 2][1])) {
@@ -182,6 +199,10 @@ class King extends Piece {
             return false;
         }
     };
+
+    check(cheeseBoard: ChessBoard) {
+        return this.isLegalMove(cheeseBoard.kings[(this.color + 1) % 2][0], cheeseBoard.kings[(this.color + 1) % 2][1], cheeseBoard.kings[(this.color + 1) % 2][2], false)
+    }
 }
 
 class Pawn extends Piece {
@@ -190,11 +211,12 @@ class Pawn extends Piece {
         this.type = 0;
     }
 
-    isLegalMove(x: number, y: number, check: 0 | 1, checkKing: boolean) {
+    isLegalMove(x: number, y: number, check: number, checkKing: boolean, board?: ChessBoard): boolean {
+
+        const chessboard: ChessBoard = board ? board : this.chesseService.chessBoard.getValue();
         let legal = false;
-        const board = this.chesseService.chessBoard.getValue();
         let checkPiece: Piece[] = [];
-        if (checkKing && (x == board.kings[(this.color + 1) % 2][0] && 1 == board.kings[(this.color + 1) % 2][1])) {
+        if (checkKing && (x == chessboard.kings[(this.color + 1) % 2][0] && 1 == chessboard.kings[(this.color + 1) % 2][1])) {
             legal = false
             return legal;
         }
@@ -202,15 +224,18 @@ class Pawn extends Piece {
         if ((this.color == 0 && y == this.posY - 1) || (this.color == 1 && y == this.posY + 1)) {
             if (x == this.posX) {
                 if (check == 0) {
-                    legal = (board.board[y][x] == null);
+                    legal = (chessboard.board[y][x] == null);
                 }
             } else if (Math.abs(x - this.posX) == 1) {
                 if (check == 0) {
-                    legal = (board.board[y][x] != null) && (board.board[y][x].color != this.color);
+                    legal = (chessboard.board[y][x] != null) && (chessboard.board[y][x].color != this.color);
                 }
             }
         }
         return legal;
+    }
+    check(cheeseBoard: ChessBoard) {
+        return this.isLegalMove(cheeseBoard.kings[(this.color + 1) % 2][0], cheeseBoard.kings[(this.color + 1) % 2][1], cheeseBoard.kings[(this.color + 1) % 2][2], false)
     }
 }
 
@@ -220,11 +245,12 @@ class Bishop extends Piece {
         this.type = 2;
     }
 
-    isLegalMove(x: number, y: number, check: 0 | 1, checkKing: boolean) {
+    isLegalMove(x: number, y: number, check: number, checkKing: boolean, board?: ChessBoard): boolean {
+
+        const chessboard: ChessBoard = board ? board : this.chesseService.chessBoard.getValue();
         let legal = false;
-        const board = this.chesseService.chessBoard.getValue();
         let checkPiece: Piece[] = [];
-        if (checkKing && (x == board.kings[(this.color + 1) % 2][0] && 1 == board.kings[(this.color + 1) % 2][1])) {
+        if (checkKing && (x == chessboard.kings[(this.color + 1) % 2][0] && 1 == chessboard.kings[(this.color + 1) % 2][1])) {
             legal = false
             return legal;
         }
@@ -235,17 +261,23 @@ class Bishop extends Piece {
             let actY = this.posY + ySing;
             let actX = this.posX + xSing;
             while ((actX != x && actY != y) && !inMiddle) {
-                inMiddle = board.board[actY][actX] != null;
+                inMiddle = chessboard.board[actY][actX] != null;
                 actY = actY + ySing;
                 actX = actX + xSing;
             }
             if (inMiddle) {
                 legal = false;
             } else {
-                legal = (board.board[actY][actX] != null && board.board[actY][actX].color != this.color) || (board.board[actY][actX] == null)
+                legal = (chessboard.board[actY][actX] != null && chessboard.board[actY][actX].color != this.color) || (chessboard.board[actY][actX] == null)
             }
         }
         return legal;
+    }
+
+    check(cheeseBoard: ChessBoard) {
+        console.log(cheeseBoard);
+        
+        return this.isLegalMove(cheeseBoard.kings[(this.color + 1) % 2][0], cheeseBoard.kings[(this.color + 1) % 2][1], cheeseBoard.kings[(this.color + 1) % 2][2], false)
     }
 }
 
@@ -255,11 +287,12 @@ class Queen extends Piece {
         this.type = 4;
     }
 
-    isLegalMove(x: number, y: number, check: 0 | 1, checkKing: boolean) {
+    isLegalMove(x: number, y: number, check: number, checkKing: boolean, board?: ChessBoard): boolean {
+
+        const chessboard: ChessBoard = board ? board : this.chesseService.chessBoard.getValue();
         let legal = false;
-        const board = this.chesseService.chessBoard.getValue();
         let checkPiece: Piece[] = [];
-        if (checkKing && (x == board.kings[(this.color + 1) % 2][0] && 1 == board.kings[(this.color + 1) % 2][1])) {
+        if (checkKing && (x == chessboard.kings[(this.color + 1) % 2][0] && 1 == chessboard.kings[(this.color + 1) % 2][1])) {
             legal = false
             return legal;
         }
@@ -270,16 +303,20 @@ class Queen extends Piece {
         if ((Math.abs(x - this.posX) == Math.abs(y - this.posY)) || (xSing == 0) || (ySing == 0)) {
             let inMiddle = false;
             while ((actX != x && actY != y) && !inMiddle) {
-                inMiddle = legal = board.board[actY][actX] != null;
+                inMiddle = legal = chessboard.board[actY][actX] != null;
                 actY = actY + ySing;
                 actX = actX + xSing;
             }
             if (inMiddle) {
                 legal = false;
             } else {
-                legal = (board.board[actY][actX] != null && board.board[actY][actX].color != this.color) || (board.board[actY][actX] == null)
+                legal = (chessboard.board[actY][actX] != null && chessboard.board[actY][actX].color != this.color) || (chessboard.board[actY][actX] == null)
             }
         }
         return legal;
+    }
+
+    check(cheeseBoard: ChessBoard) {
+        return this.isLegalMove(cheeseBoard.kings[(this.color + 1) % 2][0], cheeseBoard.kings[(this.color + 1) % 2][1], cheeseBoard.kings[(this.color + 1) % 2][2], false)
     }
 }

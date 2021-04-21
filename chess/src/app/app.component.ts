@@ -34,6 +34,8 @@ export class AppComponent {
       this.color = data.color
       if (this.color == 0) {
         this.startGame();
+      } else if(this.color==1){
+        this.socketService.sendStart(this.room)
       }
       this.oponentMoves();
 
@@ -49,7 +51,7 @@ export class AppComponent {
   }
 
   startGame = () => {
-    this.socketService.gameStart(this.room).subscribe((start) => {
+    this.socketService.getStart(this.room).subscribe((start) => {
       console.log(start);
       this.moveAllowed = true;
     })

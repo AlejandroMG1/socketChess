@@ -1,10 +1,23 @@
-<div *ngIf="chesseBoard.board" style="text-align: center; width: 100%; align-content: center;">
-  <div *ngFor="let row of chesseBoard.board ; index as i"
-    style="display: flex; height: 11vh; position: relative; width: fit-content; margin: auto;">
-    <div *ngFor="let piece of row; index as j"
-      style="height: 100%; width: 11vh; border: 1px solid black; position: relative;"
-      [ngStyle]="{'background-color': ((i+j)%2==1) ? '#207CC4':'white'}" (click)="performAction(j,i)">
-      <img *ngIf="piece" src="assets\images\{{''+piece.color+piece.type}}.png" alt="" style="max-width: 90%; max-height: 90%;"> 
+<div *ngIf="chesseBoard.board"
+  style="text-align: center; width: 100%; height: 100vh; align-content: center; position: relative; display: flex;">
+  <div *ngIf="color == 1" style="width: 100%; text-align: center; position: absolute; top: 0;">
+    Tu
+    <p *ngIf="!moveAllowed">Esperando...</p>
+  </div>
+  <div style="margin-top: 10vh; margin-bottom: 10vh; margin-left: auto; margin-right: auto;">
+    <div *ngFor="let row of chesseBoard.board ; index as i"
+      style="display: flex; height: 10vh; position: relative; width: fit-content; ">
+      <div *ngFor="let piece of row; index as j"
+        style="height: 100%; width: 10vh; border: 1px solid black; position: relative;"
+        [ngStyle]="{'background-color': ((i+j)%2==1) ? '#207CC4':'white'}" (click)="performAction(j,i)">
+        <img *ngIf="piece" src="assets\images\{{''+piece.color+piece.type}}.png" alt=""
+          style="max-width: 90%; max-height: 90%;">
+      </div>
+    </div>
+    <div *ngIf="color == 0" style="width: 100%; text-align: center; margin-top: 1rem;">
+      Tu
+      <p *ngIf="!moveAllowed">Esperando...</p>
     </div>
   </div>
+
 </div>
