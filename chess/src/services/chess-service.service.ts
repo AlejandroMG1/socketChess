@@ -9,15 +9,23 @@ export class ChessService {
 
   public chessBoard: BehaviorSubject<ChessBoard> = new BehaviorSubject(null);
   public semaphore: BehaviorSubject<number> = new BehaviorSubject(32);
-  public trigger:BehaviorSubject<boolean> = new BehaviorSubject(false);
+  public trigger: BehaviorSubject<boolean> = new BehaviorSubject(false);
 
-  public whiteCheck:BehaviorSubject<Piece[]> = new BehaviorSubject([]) 
+  public whiteCheck: BehaviorSubject<Piece[]> = new BehaviorSubject([])
 
-  public blackCheck:BehaviorSubject<Piece[]> = new BehaviorSubject([]) 
+  public blackCheck: BehaviorSubject<Piece[]> = new BehaviorSubject([])
 
-  public futureBoard:BehaviorSubject<ChessBoard> = new BehaviorSubject(null)
+  public futureBoard: BehaviorSubject<ChessBoard> = new BehaviorSubject(null)
 
   constructor() { }
+
+  addCheck(piece: Piece) {
+    if (piece.color === 1) {
+      this.whiteCheck.value.push(piece);
+    }else{
+      this.blackCheck.value.push(piece);
+    }
+  }
 
   up() {
     this.semaphore.next(32);
@@ -28,23 +36,23 @@ export class ChessService {
     this.semaphore.next(value - 1);
   }
 
-  changeTrigger(value){
+  changeTrigger(value) {
     this.trigger.next(value);
   }
 
-  cloneBoard(board: ChessBoard){
+  cloneBoard(board: ChessBoard) {
     let aux1 = this.cloneMatrix(board.board);
     let aux2 = this.cloneMatrix(board.kings);
-    let auxboard =  Object.assign({},board);
+    let auxboard = Object.assign({}, board);
     auxboard.board = aux1;
     auxboard.kings = aux2;
     return auxboard;
   }
 
-  cloneMatrix(value: any){
+  cloneMatrix(value: any) {
     let clonned = [];
     value.forEach(element => {
-      clonned.push(Object.assign({},element));
+      clonned.push(Object.assign({}, element));
     });
     return clonned;
   }

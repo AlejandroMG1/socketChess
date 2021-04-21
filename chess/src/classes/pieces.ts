@@ -20,14 +20,27 @@ export class ChessBoard {
             this.chessService.futureBoard.next(future_board);
             this.chessService.changeTrigger(true);
             this.chessService.changeTrigger(false);
+            let actualCheck = 0;
+            if (piece.color === 0){
+                actualCheck = this.chessService.whiteCheck.value.length;
+            }else{
+                actualCheck = this.chessService.blackCheck.value.length
+            }
             /* let suscription = this.chessService.semaphore.subscribe() */
             this.chessService.semaphore.pipe(take(32)).subscribe(
                 (data) => {
                     if (data === 0) {
                         console.log("finish");
+                        if(piece.color === 0 && this.chessService.whiteCheck.value.length > actualCheck){
+                            console.log("gg")
+                        }else if(piece.color === 1 && this.chessService.blackCheck.value.length > actualCheck){
+                            console.log("gg2");
+                        }
                         this.board[y][x] = piece;
                         this.board[first_y][first_x] = null
                         this.chessService.chessBoard.next(this);
+                        console.log(this.chessService.whiteCheck.value);
+                        console.log(this.chessService.blackCheck.value);
                         this.chessService.up();
                     }
                 }
@@ -117,7 +130,9 @@ class Tower extends Piece {
             (data) => {
                 if (data) {
                     let board = this.chesseService.futureBoard.value;
-                    this.check(board)
+                    if(this.check(board)){
+                        this.chesseService.addCheck(this);
+                    }
                     this.chesseService.down()
                 }
             }
@@ -182,7 +197,9 @@ class Horse extends Piece {
             (data) => {
                 if (data) {
                     let board = this.chesseService.futureBoard.value;
-                    this.check(board)
+                    if(this.check(board)){
+                        this.chesseService.addCheck(this);
+                    }
                     this.chesseService.down()
                 }
             }
@@ -220,7 +237,9 @@ class King extends Piece {
             (data) => {
                 if (data) {
                     let board = this.chesseService.futureBoard.value;
-                    this.check(board)
+                    if(this.check(board)){
+                        this.chesseService.addCheck(this);
+                    }
                     this.chesseService.down()
                 }
             }
@@ -255,7 +274,9 @@ class Pawn extends Piece {
             (data) => {
                 if (data) {
                     let board = this.chesseService.futureBoard.value;
-                    this.check(board)
+                    if(this.check(board)){
+                        this.chesseService.addCheck(this);
+                    }
                     this.chesseService.down()
                 }
             }
@@ -296,7 +317,9 @@ class Bishop extends Piece {
             (data) => {
                 if (data) {
                     let board = this.chesseService.futureBoard.value;
-                    this.check(board)
+                    if(this.check(board)){
+                        this.chesseService.addCheck(this);
+                    }
                     this.chesseService.down()
                 }
             }
@@ -345,7 +368,9 @@ class Queen extends Piece {
             (data) => {
                 if (data) {
                     let board = this.chesseService.futureBoard.value;
-                    this.check(board)
+                    if(this.check(board)){
+                        this.chesseService.addCheck(this);
+                    }
                     this.chesseService.down()
                 }
             }
