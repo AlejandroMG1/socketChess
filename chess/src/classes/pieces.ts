@@ -15,9 +15,9 @@ export class ChessBoard {
             piece.posX = x;
             piece.posY = y;
             moved = true;
-            console.log(this);
-            
-            console.log(piece.check(this));
+            this.chessService.changeTrigger(true);
+            this.chessService.changeTrigger(false);
+            /* console.log(piece.check(this)); */
         }
         return moved
     };
@@ -55,8 +55,8 @@ export class ChessBoard {
                     } else if (j == 4) {
                         this.board[i][j] = new King(j, i, i < 4 ? 1 : 0, this.chessService)
                         this.kings[i < 4 ? 1 : 0] = [];
-                        this.kings[i < 4 ? 1 : 0][0] = i;
-                        this.kings[i < 4 ? 1 : 0][1] = j;
+                        this.kings[i < 4 ? 1 : 0][0] = j;
+                        this.kings[i < 4 ? 1 : 0][1] = i;
                         this.kings[i < 4 ? 1 : 0][2] = 0;
                     }
                 } else {
@@ -90,7 +90,7 @@ export class Piece {
         return false;
     };
     check(cheeseBoard: ChessBoard) {
-        return this.isLegalMove(cheeseBoard.kings[(this.color + 1) % 2][0], cheeseBoard.kings[(this.color + 1) % 2][1], cheeseBoard.kings[(this.color + 1) % 2][2], false)
+        return true
     }
 }
 
@@ -101,7 +101,6 @@ class Tower extends Piece {
     }
 
     isLegalMove(x: number, y: number, check: number, checkKing: boolean, board?: ChessBoard): boolean {
-
         const chessboard: ChessBoard = board ? board : this.chesseService.chessBoard.getValue();
         if ((chessboard.board[y][x] != null) && (chessboard.board[y][x].color == this.color)) {
             return false;
@@ -145,6 +144,7 @@ class Tower extends Piece {
             return false;
         }
     }
+    
     check(cheeseBoard: ChessBoard) {
         return this.isLegalMove(cheeseBoard.kings[(this.color + 1) % 2][0], cheeseBoard.kings[(this.color + 1) % 2][1], cheeseBoard.kings[(this.color + 1) % 2][2], false)
     }
@@ -185,7 +185,7 @@ class King extends Piece {
         this.type = 5;
     }
 
-    isLegalMove(x: number, y: number, check:number, checkKing: boolean, board?: ChessBoard): boolean {
+    isLegalMove(x: number, y: number, check: number, checkKing: boolean, board?: ChessBoard): boolean {
 
         const chessboard: ChessBoard = board ? board : this.chesseService.chessBoard.getValue();
         if ((chessboard.board[y][x] != null) && (chessboard.board[y][x].color == this.color)) {
@@ -212,15 +212,15 @@ class Pawn extends Piece {
     }
 
     isLegalMove(x: number, y: number, check: number, checkKing: boolean, board?: ChessBoard): boolean {
-
         const chessboard: ChessBoard = board ? board : this.chesseService.chessBoard.getValue();
         let legal = false;
         let checkPiece: Piece[] = [];
+        console.log(checkKing);
         if (checkKing && (x == chessboard.kings[(this.color + 1) % 2][0] && 1 == chessboard.kings[(this.color + 1) % 2][1])) {
             legal = false
+            console.log("here");
             return legal;
         }
-
         if ((this.color == 0 && y == this.posY - 1) || (this.color == 1 && y == this.posY + 1)) {
             if (x == this.posX) {
                 if (check == 0) {
@@ -276,7 +276,7 @@ class Bishop extends Piece {
 
     check(cheeseBoard: ChessBoard) {
         console.log(cheeseBoard);
-        
+
         return this.isLegalMove(cheeseBoard.kings[(this.color + 1) % 2][0], cheeseBoard.kings[(this.color + 1) % 2][1], cheeseBoard.kings[(this.color + 1) % 2][2], false)
     }
 }
