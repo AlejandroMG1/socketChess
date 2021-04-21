@@ -1,5 +1,6 @@
 import { ChessService } from "src/services/chess-service.service";
 import { Move } from "./auxiliars";
+import { take } from 'rxjs/operators';
 
 export class ChessBoard {
     board: Piece[][];
@@ -10,13 +11,66 @@ export class ChessBoard {
         const first_x = piece.posX;
         const first_y = piece.posY;
         if (piece.isLegalMove(x, y, 0, true)) {
-            this.board[y][x] = piece;
-            this.board[first_y][first_x] = null;
+            if(piece.type === 5){
+                this.kings[(piece.color)][0] = x;
+                this.kings[(piece.color)][0] = y;
+            }
+            let future_board = this.chessService.cloneBoard(this);
+            console.log(future_board);
+            future_board.board[y][x] = piece;
+            future_board.board[first_y][first_x] = null;
+            let beforex = piece.posX;
+            let beforey = piece.posY;
             piece.posX = x;
             piece.posY = y;
             moved = true;
+            this.chessService.futureBoard.next(future_board);
+            this.chessService.resetCheck();/* 
+            console.log(this.chessService.blackCheck.value); */
             this.chessService.changeTrigger(true);
             this.chessService.changeTrigger(false);
+            let actualCheck = 0;
+            /* let suscription = this.chessService.semaphore.subscribe() */
+            this.chessService.semaphore.pipe(take(32)).subscribe(
+                (data) => {
+                    console.log(data);
+                    if (data === 0) {/* 
+                        console.log(this.chessService.futureBoard);
+                        console.log(this.chessService.blackCheck.value); */
+                        if (piece.color === 0) {
+                            if (this.chessService.whiteCheck.value.length > 0) {
+                                moved = false;
+                                piece.posX = beforex;
+                                piece.posY = beforey;
+                                if(piece.type === 5){
+                                    this.kings[(piece.color)][0] = beforex;
+                                    this.kings[(piece.color)][0] = beforey;
+                                }
+                                return;
+                            }
+                        } else {
+                            console.log(this.chessService.blackCheck.value.length);
+                            if (this.chessService.blackCheck.value.length > 0) {
+                                moved = false;
+                                piece.posX = beforex;
+                                piece.posY = beforey;
+                                if(piece.type === 5){
+                                    this.kings[(piece.color)][0] = beforex;
+                                    this.kings[(piece.color)][0] = beforey;
+                                }
+                                this.chessService.up();
+                                return;
+                            }
+                        }
+                        this.board[y][x] = piece;   
+                        this.board[first_y][first_x] = null
+                        console.log(this);
+                        this.chessService.chessBoard.next(this);
+                        this.chessService.up();
+                        this.chessService.UpdateSendTrigger(true);
+                    }
+                }
+            )
             /* console.log(piece.check(this)); */
         }
         return moved
@@ -28,16 +82,16 @@ export class ChessBoard {
         this.board[move.orgY][move.orgX] = null;
         piece.posX = move.destX;
         piece.posY = move.destY;
-        if(piece.type == 4){
-            this.kings[piece.color][0]=move.destX
-            this.kings[piece.color][1]=move.destY
-        }
+        this.chessService.futureBoard.next(this);
+        this.chessService.changeTrigger(true);
+        this.chessService.changeTrigger(false);
+        this.chessService.up();
     }
-
 
     constructor(private chessService: ChessService) {
 
     }
+
     defaulBoard() {
         this.board = [];
         this.kings = [];
@@ -102,6 +156,17 @@ class Tower extends Piece {
     constructor(posx, posy, color, chessService) {
         super(posx, posy, color, chessService);
         this.type = 1;
+        this.chesseService.trigger.subscribe(
+            (data) => {
+                if (data) {
+                    let board = this.chesseService.futureBoard.value;
+                    if (this.check(board)) {
+                        this.chesseService.addCheck(this);
+                    }
+                    this.chesseService.down()
+                }
+            }
+        )
     }
 
     isLegalMove(x: number, y: number, check: number, checkKing: boolean, board?: ChessBoard): boolean {
@@ -148,9 +213,9 @@ class Tower extends Piece {
             return false;
         }
     }
-    
+
     check(cheeseBoard: ChessBoard) {
-        return this.isLegalMove(cheeseBoard.kings[(this.color + 1) % 2][0], cheeseBoard.kings[(this.color + 1) % 2][1], cheeseBoard.kings[(this.color + 1) % 2][2], false)
+        return this.isLegalMove(cheeseBoard.kings[(this.color + 1) % 2][0], cheeseBoard.kings[(this.color + 1) % 2][1], cheeseBoard.kings[(this.color + 1) % 2][2], false, cheeseBoard)
     }
 }
 
@@ -158,6 +223,17 @@ class Horse extends Piece {
     constructor(posx, posy, color, chessService) {
         super(posx, posy, color, chessService);
         this.type = 3;
+        this.chesseService.trigger.subscribe(
+            (data) => {
+                if (data) {
+                    let board = this.chesseService.futureBoard.value;
+                    if (this.check(board)) {
+                        this.chesseService.addCheck(this);
+                    }
+                    this.chesseService.down()
+                }
+            }
+        )
     }
 
     isLegalMove(x: number, y: number, check: number, checkKing: boolean, board?: ChessBoard): boolean {
@@ -179,7 +255,7 @@ class Horse extends Piece {
     };
 
     check(cheeseBoard: ChessBoard) {
-        return this.isLegalMove(cheeseBoard.kings[(this.color + 1) % 2][0], cheeseBoard.kings[(this.color + 1) % 2][1], cheeseBoard.kings[(this.color + 1) % 2][2], false)
+        return this.isLegalMove(cheeseBoard.kings[(this.color + 1) % 2][0], cheeseBoard.kings[(this.color + 1) % 2][1], cheeseBoard.kings[(this.color + 1) % 2][2], false, cheeseBoard)
     }
 }
 
@@ -187,6 +263,17 @@ class King extends Piece {
     constructor(posx, posy, color, chessService) {
         super(posx, posy, color, chessService);
         this.type = 5;
+        this.chesseService.trigger.subscribe(
+            (data) => {
+                if (data) {
+                    let board = this.chesseService.futureBoard.value;
+                    if (this.check(board)) {
+                        this.chesseService.addCheck(this);
+                    }
+                    this.chesseService.down()
+                }
+            }
+        )
     }
 
     isLegalMove(x: number, y: number, check: number, checkKing: boolean, board?: ChessBoard): boolean {
@@ -205,7 +292,7 @@ class King extends Piece {
     };
 
     check(cheeseBoard: ChessBoard) {
-        return this.isLegalMove(cheeseBoard.kings[(this.color + 1) % 2][0], cheeseBoard.kings[(this.color + 1) % 2][1], cheeseBoard.kings[(this.color + 1) % 2][2], false)
+        return this.isLegalMove(cheeseBoard.kings[(this.color + 1) % 2][0], cheeseBoard.kings[(this.color + 1) % 2][1], cheeseBoard.kings[(this.color + 1) % 2][2], false, cheeseBoard)
     }
 }
 
@@ -213,6 +300,17 @@ class Pawn extends Piece {
     constructor(posx, posy, color, chessService) {
         super(posx, posy, color, chessService);
         this.type = 0;
+        this.chesseService.trigger.subscribe(
+            (data) => {
+                if (data) {
+                    let board = this.chesseService.futureBoard.value;
+                    if (this.check(board)) {
+                        this.chesseService.addCheck(this);
+                    }
+                    this.chesseService.down()
+                }
+            }
+        )
     }
 
     isLegalMove(x: number, y: number, check: number, checkKing: boolean, board?: ChessBoard): boolean {
@@ -237,7 +335,7 @@ class Pawn extends Piece {
         return legal;
     }
     check(cheeseBoard: ChessBoard) {
-        return this.isLegalMove(cheeseBoard.kings[(this.color + 1) % 2][0], cheeseBoard.kings[(this.color + 1) % 2][1], cheeseBoard.kings[(this.color + 1) % 2][2], false)
+        return this.isLegalMove(cheeseBoard.kings[(this.color + 1) % 2][0], cheeseBoard.kings[(this.color + 1) % 2][1], cheeseBoard.kings[(this.color + 1) % 2][2], false, cheeseBoard)
     }
 }
 
@@ -245,6 +343,17 @@ class Bishop extends Piece {
     constructor(posx, posy, color, chessService) {
         super(posx, posy, color, chessService);
         this.type = 2;
+        this.chesseService.trigger.subscribe(
+            (data) => {
+                if (data) {
+                    let board = this.chesseService.futureBoard.value;
+                    if (this.check(board)) {
+                        this.chesseService.addCheck(this);
+                    }
+                    this.chesseService.down()
+                }
+            }
+        )
     }
 
     isLegalMove(x: number, y: number, check: number, checkKing: boolean, board?: ChessBoard): boolean {
@@ -285,6 +394,17 @@ class Queen extends Piece {
     constructor(posx, posy, color, chessService) {
         super(posx, posy, color, chessService);
         this.type = 4;
+        this.chesseService.trigger.subscribe(
+            (data) => {
+                if (data) {
+                    let board = this.chesseService.futureBoard.value;
+                    if (this.check(board)) {
+                        this.chesseService.addCheck(this);
+                    }
+                    this.chesseService.down()
+                }
+            }
+        )
     }
 
     isLegalMove(x: number, y: number, check: number, checkKing: boolean, board?: ChessBoard): boolean {
@@ -301,10 +421,21 @@ class Queen extends Piece {
         const xSing = Math.sign(x - this.posX);
         let actY = this.posY + ySing;
         let actX = this.posX + xSing;
-        if ((Math.abs(x - this.posX) == Math.abs(y - this.posY)) || (xSing == 0) || (ySing == 0)) {
-            let inMiddle = false;
+        let inMiddle = false;
+        if ((Math.abs(x - this.posX) == Math.abs(y - this.posY))) {
             while ((actX != x && actY != y) && !inMiddle) {
-                inMiddle = legal = chessboard.board[actY][actX] != null;
+                inMiddle = chessboard.board[actY][actX] != null;
+                actY = actY + ySing;
+                actX = actX + xSing;
+            }
+            if (inMiddle) {
+                legal = false;
+            } else {
+                legal = (chessboard.board[actY][actX] != null && chessboard.board[actY][actX].color != this.color) || (chessboard.board[actY][actX] == null)
+            }
+        } else if ((xSing == 0) || (ySing == 0)) {
+            while ((actX != x || actY != y) && !inMiddle) {
+                inMiddle = chessboard.board[actY][actX] != null;
                 actY = actY + ySing;
                 actX = actX + xSing;
             }
@@ -318,7 +449,6 @@ class Queen extends Piece {
     }
 
     check(cheeseBoard: ChessBoard) {
-        return this.isLegalMove(cheeseBoard.kings[(this.color + 1) % 2][0], cheeseBoard.kings[(this.color + 1) % 2][1], cheeseBoard.kings[(this.color + 1) % 2][2], false)
-        
+        return this.isLegalMove(cheeseBoard.kings[(this.color + 1) % 2][0], cheeseBoard.kings[(this.color + 1) % 2][1], 0, false, cheeseBoard)
     }
 }
