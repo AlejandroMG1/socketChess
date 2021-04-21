@@ -10,16 +10,23 @@ app.get('/', (req, res) => {
 });
 
 players = -1;
+playersRoom = [];
 io.on('connection', (socket) => {
     console.log('a user connected');
     players++;
+    playersRoom.push({id:socket.id,room:Math.floor(players/2), color:players%2})
     socket.emit('getPlayer',{color:players%2,room:Math.floor(players/2)})
     socket.on('start', (room) => {
         io.emit(''+room+'start', room);
     });
     socket.on('disconnect', () => {
-        players--;
+        console.log(socket.id);
         console.log('user disconnected');
+        disconected = playersRoom.find(function(post, index) {
+            if(post.id == socket.id)
+                return true;
+        });
+        io.emit(''+disconected.room+(disconected.color+1)%2+'wWin', disconected.room);
     });
     socket.on('move', (move) => {
         io.emit(''+move.room+move.color+'move', move);

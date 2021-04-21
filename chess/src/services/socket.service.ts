@@ -27,12 +27,18 @@ export class SocketService {
   }
 
   getStart(room): Observable<any> {
-    console.log(''+room+'start');
-    
     return new Observable((observer) => {
       this.socket.on(''+room+'start', (data) => {
         console.log(data);
         
+        observer.next(data)
+      })
+    })
+  }
+
+  getWWin(room,color): Observable<any> {
+    return new Observable((observer) => {
+      this.socket.on(''+room+color+'wWin', (data) => {
         observer.next(data)
       })
     })

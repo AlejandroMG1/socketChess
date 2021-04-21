@@ -21,6 +21,8 @@ export class AppComponent {
 
   moveAllowed = false;
 
+  wWin = false;
+
   chesseBoard: ChessBoard = new ChessBoard(this.chessService)
 
   constructor(private chessService: ChessService, private socketService: SocketService) {
@@ -38,7 +40,7 @@ export class AppComponent {
         this.socketService.sendStart(this.room)
       }
       this.oponentMoves();
-
+      this.getWWin();
     });
 
   }
@@ -54,6 +56,13 @@ export class AppComponent {
     this.socketService.getStart(this.room).subscribe((start) => {
       console.log(start);
       this.moveAllowed = true;
+    })
+  }
+
+  getWWin = () => {
+    this.socketService.getWWin(this.room,this.color).subscribe((win) => {
+      this.wWin = true;
+      this.moveAllowed = false;
     })
   }
 
